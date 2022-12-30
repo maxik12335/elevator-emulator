@@ -1,24 +1,28 @@
-# testovoe
+# Floors
 
-## Project setup
-```
-npm install
-```
+## Логика
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+<div>
+  Состояния:
+</div>
 
-### Compiles and minifies for production
-```
-npm run build
-```
+<div>1. Свободный этаж (этаж, где нет лифта)</div>
+<div>2. Свободный лифт (лифт в состоянии покоя)</div>
 
-### Lints and fixes files
-```
-npm run lint
-```
+<div>
+  Очередь вызовов:
+</div>
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+<div>1. Если вызов на ДРУГОЙ(не на этот) этаж, этот вызов добавить в очередь</div>
+
+<div>
+  Вызов пропускается:
+</div>
+
+<div>1. Если лифт уже на этаже (этаж не свободен)</div>
+<div>2. Если лифт уже едет на этаж, где был вызов (этаж уже не свободен и лифт на пути к нему)</div>
+<div>3. Если уже есть вызов в очереди</div>
+
+ЛОГИКА:
+1. Click на кнопку
+2. 
