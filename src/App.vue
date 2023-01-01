@@ -2,71 +2,118 @@
   <div class="container">
     
     <div class="floors-container">
-      <div class="floors-column">
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-      </div>
 
-      <div class=" ">
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-      </div>
+      <floorsColumn 
+        :floorsColumnItems="floors"
+      />
 
-      <div class="floors-column">
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-      </div>
-
-      <div class="floors-column">
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-        <div class="floors-column__item"></div>
-      </div>
-
-      <div class="floors-buttons">
-        <div class="floor-buttons__item">
-          <p class="floors-button__number">1 этаж</p>
-          <button class="floors-button">Вызвать лифт</button>
-        </div>
-
-        <div class="floor-buttons__item">
-          <p class="floors-button__number">2 этаж</p>
-          <button class="floors-button">Вызвать лифт</button>
-        </div>
-
-        <div class="floor-buttons__item">
-          <p class="floors-button__number">3 этаж</p>
-          <button class="floors-button">Вызвать лифт</button>
-        </div>
-
-        <div class="floor-buttons__item">
-          <p class="floors-button__number">4 этаж</p>
-          <button class="floors-button">Вызвать лифт</button>
-        </div>
-
-        <div class="floor-buttons__item">
-          <p class="floors-button__number">5 этаж</p>
-          <button class="floors-button">Вызвать лифт</button>
-        </div>
-      </div>
+      <floorsButtons 
+        :floors="floors"
+        @floorClick="floorClick"
+      />
+      
     </div>
 
   </div>
 </template>
 
 <script>
+import floorsButtons from "@/components/FloorsButtons.vue"
+import floorsColumn from "@/components/FloorsColumn.vue"
+
 export default {
+  components: {
+    floorsButtons,
+    floorsColumn,
+  },
+
+  data() {
+    return {
+      floors: 5,
+      locationElevator: 1,
+      beforeLocationElevator: 1,
+
+      translateY: 0,
+      status: false,
+      countArr: [],
+    }
+  },
+
+  methods: {
+    floorClick(numberLocationElevator) {  
+      this.locationElevator = numberLocationElevator
+
+      this.countArr.push(this.locationElevator)
+
+      if(this.status === true) {
+        return
+      }
+
+      this.goElevator()
+    },
+
+    goElevator() {
+      console.log("START")
+      this.status = true
+
+      console.log("GO TOP")
+      this.goTop() 
+    },
+
+    goTop() {
+      let test = setInterval(() => {
+        const elevator = document.querySelector(".elevator")
+        elevator.style.transition = "1s linear"
+        
+        if(this.check() === "top") {
+          elevator.style.transform = `translateY(${this.translateY -= 100}px)`
+        }
+
+        if(this.check() === "down") {
+          elevator.style.transform = `translateY(${this.translateY += 100}px)`
+        }
+        
+
+        if(this.translateY === (this.countArr[0]-1)*-100) {
+          clearInterval(test)
+          if(this.countArr[0]) {
+            this.beforeLocationElevator = this.countArr[0]
+          }
+          this.countArr.shift()
+          if(this.countArr[0]) {
+            setTimeout(() => {
+              this.goTop()
+            }, 3000);
+          } else {
+            setTimeout(() => {
+              this.status = false
+              console.log("END")
+            }, 3000);
+          }
+        }
+      }, 1000);
+    },
+
+    check() {
+      if(this.beforeLocationElevator > this.countArr[0]) {
+        return "down"
+      }
+
+      if(this.countArr[0] > this.beforeLocationElevator) {
+        return "top"
+      }
+    },
+
+    setTransition() {
+      if(this.beforeLocationElevator > this.locationElevator) {
+        return this.beforeLocationElevator - this.locationElevator
+      }
+
+      if(this.locationElevator > this.beforeLocationElevator) {
+        return this.locationElevator - this.beforeLocationElevator
+      }
+    }
+  },
 
 }
 </script>
@@ -88,40 +135,5 @@ export default {
     justify-content: flex-start;
     padding: 50px;
   }
-
-  .floors-column {
-    margin-right: 20px;
-  }
-
-  .floors-column__item {
-    width: 100px;
-    height: 100px;
-    border: 1px solid rgba(128, 128, 128, 0.422);
-    border-right: 2px solid #757575;
-    border-left: 2px solid #757575;
-  }
-
-  .floor-buttons__item {
-    width: 100px;
-    height: 100px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .floors-button__number {
-    margin-bottom: 10px;
-  }
-
-  .floors-button {
-    background-color: transparent;
-    border: 1px solid;
-    padding: 5px;
-    cursor: pointer;
-  }
-
-  .floors-button:hover {
-    background-color: #f4eeee;
-  }
+  
 </style>
