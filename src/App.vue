@@ -42,8 +42,13 @@ export default {
   methods: {
     floorClick(numberLocationElevator) {  
       this.locationElevator = numberLocationElevator
-
       this.countArr.push(this.locationElevator)
+
+      if(this.countArr[0] === this.beforeLocationElevator || this.countArr[0] === this.countArr[1]) {
+        console.log("Вы уже на этом этаже")
+        this.countArr.shift()
+        return
+      }
 
       if(this.status === true) {
         return
@@ -63,35 +68,75 @@ export default {
     goTop() {
       let test = setInterval(() => {
         const elevator = document.querySelector(".elevator")
+        if(elevator.classList.contains("elevator-arrived")) {
+          elevator.classList.remove("elevator-arrived")
+        }
         elevator.style.transition = "1s linear"
-        
+
         if(this.check() === "top") {
           elevator.style.transform = `translateY(${this.translateY -= 100}px)`
+          elevator.textContent = "TOP"
         }
 
         if(this.check() === "down") {
           elevator.style.transform = `translateY(${this.translateY += 100}px)`
+          elevator.textContent = "DOWN"
         }
-        
 
         if(this.translateY === (this.countArr[0]-1)*-100) {
+          setTimeout(() => {
+            elevator.classList.add("elevator-arrived")
+          }, 1000);
           clearInterval(test)
           if(this.countArr[0]) {
             this.beforeLocationElevator = this.countArr[0]
           }
-          this.countArr.shift()
-          if(this.countArr[0]) {
-            setTimeout(() => {
+
+          setTimeout(() => {
+            this.countArr.shift()
+            if(this.countArr[0]) {
               this.goTop()
-            }, 3000);
-          } else {
-            setTimeout(() => {
+            }
+            if(!this.countArr[0]) {
               this.status = false
               console.log("END")
-            }, 3000);
-          }
+            }
+          }, 3000);
+        
         }
       }, 1000);
+      // НЕ УДАЛЯТЬ код работает
+      // let test = setInterval(() => {
+      //   const elevator = document.querySelector(".elevator")
+      //   elevator.style.transition = "1s linear"
+
+      //   if(this.check() === "top") {
+      //     elevator.style.transform = `translateY(${this.translateY -= 100}px)`
+      //   }
+
+      //   if(this.check() === "down") {
+      //     elevator.style.transform = `translateY(${this.translateY += 100}px)`
+      //   }
+        
+
+      //   if(this.translateY === (this.countArr[0]-1)*-100) {
+      //     clearInterval(test)
+      //     if(this.countArr[0]) {
+      //       this.beforeLocationElevator = this.countArr[0]
+      //     }
+      //     this.countArr.shift()
+      //     if(this.countArr[0]) {
+      //       setTimeout(() => {
+      //         this.goTop()
+      //       }, 3000);
+      //     } else {
+      //       setTimeout(() => {
+      //         this.status = false
+      //         console.log("END")
+      //       }, 3000);
+      //     }
+      //   }
+      // }, 1000);
     },
 
     check() {

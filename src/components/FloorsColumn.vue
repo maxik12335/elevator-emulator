@@ -45,4 +45,25 @@ export default {
     bottom: 0;
     background-color: #262bf947;
   }
+
+  .elevator-arrived {
+    animation-name: elevatorArrived;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: 3;
+  }
+
+  @keyframes elevatorArrived {
+    0%{ 
+      background-color: #262bf947;
+    }
+
+    50% {
+      background-color: #f9262647;
+    }
+
+    100%{
+      background-color: #262bf947;
+    }
+  }
 </style>
