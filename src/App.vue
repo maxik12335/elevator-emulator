@@ -44,10 +44,28 @@ export default {
       this.locationElevator = numberLocationElevator
       this.countArr.push(this.locationElevator)
 
-      if(this.countArr[0] === this.beforeLocationElevator || this.countArr[0] === this.countArr[1]) {
-        console.log("Вы уже на этом этаже")
-        this.countArr.shift()
-        return
+      let last = this.countArr[this.countArr.length - 1]
+
+      const inButtonColor = document.querySelectorAll(".in-button-color")
+      inButtonColor[last - 1].style.borderColor = "red"
+
+      if(this.countArr.length > 1) {
+        
+        let filterArr = this.countArr.filter(item => item === last)
+        if(filterArr.length > 1) {
+          console.log("Лифт уже имеет в очереди этот этаж: ", filterArr)
+          this.countArr.pop()  
+        }     
+
+      } else {
+        
+        if(last === this.beforeLocationElevator) {
+          console.log("Вы уже на этом этаже")
+          inButtonColor[this.countArr[0] - 1].style.borderColor = "transparent"
+          this.countArr.pop()
+          return
+        }
+
       }
 
       if(this.status === true) {
@@ -58,33 +76,41 @@ export default {
     },
 
     goElevator() {
-      console.log("START")
       this.status = true
-
-      console.log("GO TOP")
       this.goTop() 
     },
 
     goTop() {
       let test = setInterval(() => {
         const elevator = document.querySelector(".elevator")
+        const arrow = document.querySelector(".arrow")
+        const floorNumber = document.querySelector(".floor-number")
+      
+        arrow.classList.add('arrow-show')
+
         if(elevator.classList.contains("elevator-arrived")) {
           elevator.classList.remove("elevator-arrived")
         }
+
         elevator.style.transition = "1s linear"
 
         if(this.check() === "top") {
           elevator.style.transform = `translateY(${this.translateY -= 100}px)`
-          elevator.textContent = "TOP"
+          arrow.style.transform = "rotate(180deg)"
+          floorNumber.textContent = `${this.countArr[0]}`
+
         }
 
         if(this.check() === "down") {
           elevator.style.transform = `translateY(${this.translateY += 100}px)`
-          elevator.textContent = "DOWN"
+          arrow.style.transform = "rotate(0deg)"
+          floorNumber.textContent = `${this.countArr[0]}`
+
         }
 
         if(this.translateY === (this.countArr[0]-1)*-100) {
           setTimeout(() => {
+            arrow.classList.remove('arrow-show')
             elevator.classList.add("elevator-arrived")
           }, 1000);
           clearInterval(test)
@@ -93,6 +119,8 @@ export default {
           }
 
           setTimeout(() => {
+            const inButtonColor = document.querySelectorAll(".in-button-color")
+            inButtonColor[this.countArr[0] - 1].style.borderColor = "transparent"
             this.countArr.shift()
             if(this.countArr[0]) {
               this.goTop()
@@ -101,42 +129,10 @@ export default {
               this.status = false
               console.log("END")
             }
-          }, 3000);
+          }, 4000);
         
         }
       }, 1000);
-      // НЕ УДАЛЯТЬ код работает
-      // let test = setInterval(() => {
-      //   const elevator = document.querySelector(".elevator")
-      //   elevator.style.transition = "1s linear"
-
-      //   if(this.check() === "top") {
-      //     elevator.style.transform = `translateY(${this.translateY -= 100}px)`
-      //   }
-
-      //   if(this.check() === "down") {
-      //     elevator.style.transform = `translateY(${this.translateY += 100}px)`
-      //   }
-        
-
-      //   if(this.translateY === (this.countArr[0]-1)*-100) {
-      //     clearInterval(test)
-      //     if(this.countArr[0]) {
-      //       this.beforeLocationElevator = this.countArr[0]
-      //     }
-      //     this.countArr.shift()
-      //     if(this.countArr[0]) {
-      //       setTimeout(() => {
-      //         this.goTop()
-      //       }, 3000);
-      //     } else {
-      //       setTimeout(() => {
-      //         this.status = false
-      //         console.log("END")
-      //       }, 3000);
-      //     }
-      //   }
-      // }, 1000);
     },
 
     check() {

@@ -6,7 +6,12 @@
       :key="floorsColumnItem"
     ></div>
 
-    <div class="elevator"></div>
+    <div class="elevator">
+      <div class="arrow">
+        <img src="@/images/arrow-down.svg" alt="arrow">
+      </div>
+      <div class="floor-number"></div>
+    </div>
   </div>
 </template>
 
@@ -44,6 +49,9 @@ export default {
     left: 0;
     bottom: 0;
     background-color: #262bf947;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .elevator-arrived {
@@ -51,6 +59,22 @@ export default {
     animation-duration: 1s;
     animation-timing-function: linear;
     animation-iteration-count: 3;
+  }
+
+  .arrow {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    display: none;
+  }
+
+  .arrow-show {
+    display: block;
+  }
+
+  .arrow img {
+    width: 100%;
+    height: 100%;
   }
 
   @keyframes elevatorArrived {
