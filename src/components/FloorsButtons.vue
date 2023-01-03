@@ -2,7 +2,7 @@
   <div class="floors-buttons">
 
     <div 
-      v-for="floor in floors"
+      v-for="floor in floorsQuentity"
       :key="floor"
       class="floor-buttons__item"
     >
@@ -22,7 +22,7 @@
 <script>
 export default {
   props: {
-    floors: {
+    floorsQuentity: {
       default: true
     },
   },

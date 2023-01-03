@@ -2,8 +2,8 @@
   <div class="floors-column">
     <div 
       class="floors-column__item"
-      v-for="floorsColumnItem in floorsColumnItems"
-      :key="floorsColumnItem"
+      v-for="floor in floorsQuentity"
+      :key="floor"
     ></div>
 
     <div class="elevator">
@@ -18,7 +18,7 @@
 <script>
 export default {
   props: {
-    floorsColumnItems: {
+    floorsQuentity: {
       default: true
     },
   },
@@ -52,9 +52,10 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: 1s linear;
   }
 
-  .elevator-arrived {
+  .elevator-animate {
     animation-name: elevatorArrived;
     animation-duration: 1s;
     animation-timing-function: linear;

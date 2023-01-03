@@ -4,11 +4,11 @@
     <div class="floors-container">
 
       <floorsColumn 
-        :floorsColumnItems="floors"
+        :floorsQuentity="floorsQuentity"
       />
 
       <floorsButtons 
-        :floors="floors"
+        :floorsQuentity="floorsQuentity"
         @floorClick="floorClick"
       />
       
@@ -29,104 +29,96 @@ export default {
 
   data() {
     return {
-      floors: 5,
-      locationElevator: 1,
-      beforeLocationElevator: 1,
-
+      floorsQuentity: 5,
+      floorNumberNow: 1,
       translateY: 0,
-      status: false,
-      countArr: [],
+      elevatorStatus: false,
+      userEventList: [],
     }
   },
 
   methods: {
-    floorClick(numberLocationElevator) {  
-      this.locationElevator = numberLocationElevator
-      this.countArr.push(this.locationElevator)
+    floorClick(floorNumber) {  
+      this.userEventList.push(floorNumber)
 
-      let last = this.countArr[this.countArr.length - 1]
+      let lastElementUserEventList = this.userEventList[this.userEventList.length - 1]
 
       const inButtonColor = document.querySelectorAll(".in-button-color")
-      inButtonColor[last - 1].style.borderColor = "red"
+      inButtonColor[lastElementUserEventList - 1].style.borderColor = "red"
 
-      if(this.countArr.length > 1) {
+      if(this.userEventList.length > 1) {
         
-        let filterArr = this.countArr.filter(item => item === last)
-        if(filterArr.length > 1) {
-          console.log("Лифт уже имеет в очереди этот этаж: ", filterArr)
-          this.countArr.pop()  
+        let filterArrUserEventList = this.userEventList.filter(item => item === lastElementUserEventList)
+        if(filterArrUserEventList.length > 1) {
+          console.log("Лифт уже имеет в очереди этот этаж: ", filterArrUserEventList)
+          this.userEventList.pop()  
         }     
 
       } else {
         
-        if(last === this.beforeLocationElevator) {
+        if(lastElementUserEventList === this.floorNumberNow) {
           console.log("Вы уже на этом этаже")
-          inButtonColor[this.countArr[0] - 1].style.borderColor = "transparent"
-          this.countArr.pop()
+          inButtonColor[this.userEventList[0] - 1].style.borderColor = "transparent"
+          this.userEventList.pop()
           return
         }
 
       }
 
-      if(this.status === true) {
+      if(this.elevatorStatus === true) {
         return
       }
 
-      this.goElevator()
+      this.elevatorStatus = true
+      this.translateElevator()
     },
 
-    goElevator() {
-      this.status = true
-      this.goTop() 
-    },
-
-    goTop() {
-      let test = setInterval(() => {
+    translateElevator() {
+      let startElevator = setInterval(() => {
         const elevator = document.querySelector(".elevator")
         const arrow = document.querySelector(".arrow")
         const floorNumber = document.querySelector(".floor-number")
       
         arrow.classList.add('arrow-show')
 
-        if(elevator.classList.contains("elevator-arrived")) {
-          elevator.classList.remove("elevator-arrived")
-        }
-
-        elevator.style.transition = "1s linear"
-
-        if(this.check() === "top") {
+        if(this.checkDirection() === "top") {
           elevator.style.transform = `translateY(${this.translateY -= 100}px)`
           arrow.style.transform = "rotate(180deg)"
-          floorNumber.textContent = `${this.countArr[0]}`
-
+          floorNumber.textContent = `${this.userEventList[0]}`
         }
 
-        if(this.check() === "down") {
+        if(this.checkDirection() === "down") {
           elevator.style.transform = `translateY(${this.translateY += 100}px)`
           arrow.style.transform = "rotate(0deg)"
-          floorNumber.textContent = `${this.countArr[0]}`
-
+          floorNumber.textContent = `${this.userEventList[0]}`
         }
 
-        if(this.translateY === (this.countArr[0]-1)*-100) {
+        if(this.translateY === (this.userEventList[0]-1)*-100) {
+          
           setTimeout(() => {
             arrow.classList.remove('arrow-show')
-            elevator.classList.add("elevator-arrived")
+            elevator.classList.add("elevator-animate")
           }, 1000);
-          clearInterval(test)
-          if(this.countArr[0]) {
-            this.beforeLocationElevator = this.countArr[0]
+
+          clearInterval(startElevator)
+          
+          if(this.userEventList[0]) {
+            this.floorNumberNow = this.userEventList[0]
           }
 
           setTimeout(() => {
             const inButtonColor = document.querySelectorAll(".in-button-color")
-            inButtonColor[this.countArr[0] - 1].style.borderColor = "transparent"
-            this.countArr.shift()
-            if(this.countArr[0]) {
-              this.goTop()
+            inButtonColor[this.userEventList[0] - 1].style.borderColor = "transparent"
+
+            elevator.classList.remove("elevator-animate")
+            this.userEventList.shift()
+
+            if(this.userEventList[0]) {
+              this.translateElevator()
             }
-            if(!this.countArr[0]) {
-              this.status = false
+            
+            if(!this.userEventList[0]) {
+              this.elevatorStatus = false
               console.log("END")
             }
           }, 4000);
@@ -135,23 +127,25 @@ export default {
       }, 1000);
     },
 
-    check() {
-      if(this.beforeLocationElevator > this.countArr[0]) {
+    checkDirection() {
+      if(this.floorNumberNow > this.userEventList[0]) {
         return "down"
       }
 
-      if(this.countArr[0] > this.beforeLocationElevator) {
+      if(this.userEventList[0] > this.floorNumberNow) {
         return "top"
       }
     },
 
     setTransition() {
-      if(this.beforeLocationElevator > this.locationElevator) {
-        return this.beforeLocationElevator - this.locationElevator
+      let lastElementUserEventList = this.userEventList[this.userEventList.length - 1]
+
+      if(this.floorNumberNow > lastElementUserEventList) {
+        return this.floorNumberNow - lastElementUserEventList
       }
 
-      if(this.locationElevator > this.beforeLocationElevator) {
-        return this.locationElevator - this.beforeLocationElevator
+      if(lastElementUserEventList > this.floorNumberNow) {
+        return lastElementUserEventList - this.floorNumberNow
       }
     }
   },
