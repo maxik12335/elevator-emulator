@@ -62,6 +62,13 @@ export default {
     animation-iteration-count: 3;
   }
 
+  .show-elevator-way {
+    animation-name: showElevatorWay;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+  }
+
   .arrow {
     width: 20px;
     height: 20px;
