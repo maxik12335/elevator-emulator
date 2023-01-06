@@ -34,22 +34,18 @@ export default {
   data() {
     return {
       mineCount: 3,
-      elevatorStatus: [],
-      minesUserEventList: {},
-      ifMin: -1,
-      // listDefaultfloorNumber: [],
-
       floorsQuentity: 8,
-      floorNumberNow: 1,
-      translateY: 0,
-      // elevatorStatus: false,
+
+      minesUserEventList: {},
+      elevatorStatus: [],
+      notFree: -1,
+
       userEventList: [],
     }
   },
 
   mounted() {
-    // let listParams = ["eventList", "translateY"]
-
+    // установка стартовых значений
     for(let i = 0; i < this.mineCount; i++) {
       this.elevatorStatus.push(false)
       this.minesUserEventList[`${i}`] = {}
@@ -57,65 +53,58 @@ export default {
       this.minesUserEventList[`${i}`]["eventList"] = []
       this.minesUserEventList[`${i}`]["translateY"] = 0
       this.minesUserEventList[`${i}`]["floorNumberNow"] = 1
-
-      // this.listDefaultfloorNumber.push(1)
     }
   },
 
-  // + 1) список событий (всех): userEventList
-  // + 2) список лифтов с их событиями: minesUserEventList: {0: [0,1,2], 1: [3,4,5] ...}
-  // 3) св
-  // 3) Переписать логику с floorNumber. Он должен работать 
-  // внутри функции translateElevator для функции checkDirection
 
   methods: {
     floorClick(floorNumber) {  
       this.userEventList.push(floorNumber)
 
-      // Какой elevatorStatus (общий) ?
+      // Последовательность elevators
       let freeElevator = this.elevatorStatus.indexOf(false)
-      console.log(freeElevator)
 
       if(freeElevator === -1) {
-        if(this.ifMin === this.mineCount - 1) {
-          this.ifMin = 0
-          freeElevator = this.ifMin
+        if(this.notFree === this.mineCount - 1) {
+          this.notFree = 0
+          freeElevator = this.notFree
         } else {
-          this.ifMin += 1
-          freeElevator = this.ifMin
+          this.notFree += 1
+          freeElevator = this.notFree
         }
       }
 
       // Добавляю событие каждому отдельному ЛИФТУ
       this.minesUserEventList[freeElevator].eventList.push(floorNumber)
-      // Добавляю floorNumberNow каждому отдельному ЛИФТУ
-      // this.minesUserEventList[freeElevator].floorNumberNow = floorNumber
 
-
-      let lastElementUserEventList = this.userEventList[this.userEventList.length - 1]
+      const lastElementUserEventList = this.userEventList[this.userEventList.length - 1]
       const inButtonColor = document.querySelectorAll(".in-button-color")
-      inButtonColor[lastElementUserEventList - 1].style.borderColor = "red"
+
+      // условия остановки
       if(this.userEventList.length > 1) {
-        
+        let res = this.messageElevatorOnFloor(freeElevator, inButtonColor, lastElementUserEventList)
+       
+        if(res === "stop") {
+          return
+        }
+
         let filterArrUserEventList = this.userEventList.filter(item => item === lastElementUserEventList)
         if(filterArrUserEventList.length > 1) {
           console.log("Лифт уже имеет в очереди этот этаж: ", filterArrUserEventList)
           this.userEventList.pop()
           this.minesUserEventList[freeElevator].eventList.pop()
-        }     
-
-      } else {
-        
-        if(lastElementUserEventList === this.floorNumberNow) {
-          console.log("Вы уже на этом этаже")
-          inButtonColor[this.userEventList[0] - 1].style.borderColor = "transparent"
-          this.userEventList.pop()
-          this.minesUserEventList[freeElevator].eventList.pop()
           return
         }
 
+      } else {
+        let res = this.messageElevatorOnFloor(freeElevator, inButtonColor, lastElementUserEventList)
+
+        if(res === "stop") {
+          return
+        }
       }
 
+      // Проверка для  последовательного запуска фукнции translateElevator
       if(this.elevatorStatus[freeElevator] === true) {
         return
       }
@@ -129,23 +118,24 @@ export default {
         const elevator = document.querySelectorAll(".elevator")[freeElevator]
         const arrow = document.querySelectorAll(".arrow")[freeElevator]
         const floorNumber = document.querySelectorAll(".floor-number")[freeElevator]
+        const mine = this.minesUserEventList[freeElevator]
       
         arrow.classList.add('arrow-show')
 
         if(this.checkDirection(floorNumberNow, freeElevator) === "top") {
-          elevator.style.transform = `translateY(${this.minesUserEventList[freeElevator].translateY -= 100}px)`
+          elevator.style.transform = `translateY(${mine.translateY -= 100}px)`
           arrow.style.transform = "rotate(180deg)"
-          floorNumber.textContent = `${this.minesUserEventList[freeElevator].eventList[0]}`
+          floorNumber.textContent = `${mine.eventList[0]}`
         }
 
         if(this.checkDirection(floorNumberNow, freeElevator) === "down") {
-          elevator.style.transform = `translateY(${this.minesUserEventList[freeElevator].translateY += 100}px)`
+          elevator.style.transform = `translateY(${mine.translateY += 100}px)`
           arrow.style.transform = "rotate(0deg)"
-          floorNumber.textContent = `${this.minesUserEventList[freeElevator].eventList[0]}`
+          floorNumber.textContent = `${mine.eventList[0]}`
         }
 
-        // if(this.minesUserEventList[freeElevator].translateY === (this.userEventList[0]-1)*-100) {
-        if(this.minesUserEventList[freeElevator].translateY === (this.minesUserEventList[freeElevator].eventList[0] - 1)*-100) {
+        // момент, когда лифт дошёл до этажа
+        if(mine.translateY === (mine.eventList[0] - 1)*-100) {
           
           setTimeout(() => {
             arrow.classList.remove('arrow-show')
@@ -153,23 +143,24 @@ export default {
           }, 1000);
 
           clearInterval(startElevator)
-          // let floorNumberNow = Number
-          if(this.minesUserEventList[freeElevator].eventList[0]) {
-            this.minesUserEventList[freeElevator].floorNumberNow = this.minesUserEventList[freeElevator].eventList[0]
-          }
 
           setTimeout(() => {
             const inButtonColor = document.querySelectorAll(".in-button-color")
-            inButtonColor[this.minesUserEventList[freeElevator].eventList[0] - 1].style.borderColor = "transparent"
+            inButtonColor[mine.eventList[0] - 1].style.borderColor = "transparent"
 
-            elevator.classList.remove("elevator-animate")
-            this.minesUserEventList[freeElevator].eventList.shift()
+            elevator.classList.remove("elevator-animate")          
 
-            if(this.minesUserEventList[freeElevator].eventList[0]) {
-              this.translateElevator(freeElevator, this.minesUserEventList[freeElevator].floorNumberNow)
+            mine.floorNumberNow = mine.eventList[0]
+            mine.eventList.shift()
+
+            this.userEventList.shift()
+
+            // вызвать функции, если есть в очереди этажи
+            if(mine.eventList[0]) {
+              this.translateElevator(freeElevator, mine.floorNumberNow)
             }
             
-            if(!this.minesUserEventList[freeElevator].eventList[0]) {
+            if(!mine.eventList[0]) {
               this.elevatorStatus[freeElevator] = false
               console.log(`Лифт №${freeElevator + 1} END`)
             }
@@ -189,17 +180,33 @@ export default {
       }
     },
 
-    setTransition() {
-      let lastElementUserEventList = this.userEventList[this.userEventList.length - 1]
+    messageElevatorOnFloor(freeElevator, inButtonColor, lastElementUserEventList) {
+      inButtonColor[lastElementUserEventList - 1].style.borderColor = "red"
 
-      if(this.floorNumberNow > lastElementUserEventList) {
-        return this.floorNumberNow - lastElementUserEventList
+      let lengthObj = Object.keys(this.minesUserEventList).length
+      let listFloors = []
+
+      for(let i = 0; i < lengthObj; i ++) {
+        listFloors.push(this.minesUserEventList[i].floorNumberNow)
       }
 
-      if(lastElementUserEventList > this.floorNumberNow) {
-        return lastElementUserEventList - this.floorNumberNow
+      // проверка на лифт, который только что ушёл, значит этаж свободен
+      let indexValue = 0;
+      listFloors.forEach((item, index) => {
+        if(item === lastElementUserEventList) {
+          indexValue = index
+          return 
+        }
+      })
+
+      if(listFloors.includes(lastElementUserEventList) && !this.elevatorStatus[indexValue]) {
+        console.log("Вы уже на этом этаже")
+        inButtonColor[lastElementUserEventList - 1].style.borderColor = "transparent"
+        this.userEventList.pop()
+        this.minesUserEventList[freeElevator].eventList.pop()
+        return "stop"
       }
-    }
+    },
   },
 
 }
